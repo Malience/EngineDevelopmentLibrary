@@ -1,0 +1,8 @@
+#Compiled files
+build/
+#Resources
+res/
+
+#Dependencies
+#dep/*
+#!dep/CmakeLists.txt

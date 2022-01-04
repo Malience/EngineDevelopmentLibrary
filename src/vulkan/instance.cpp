@@ -66,6 +66,7 @@ uint32_t Instance::getMemoryType(int filter, VkMemoryPropertyFlags properties) c
 void getPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice, PhysicalDeviceFeatures& features) {
 	VkPhysicalDeviceFeatures2& features2 = features.features2;
 	VkPhysicalDeviceVulkan11Features& vulkan11Features = features.vulkan11Features;
+	VkPhysicalDeviceDescriptorIndexingFeatures& descriptorIndexingFeatures = features.descriptorIndexingFeatures;
 	VkPhysicalDeviceDynamicRenderingFeaturesKHR& dynamicRenderingFeaturesKHR = features.dynamicRenderingFeaturesKHR;
 
 	// Initialize the features
@@ -73,7 +74,10 @@ void getPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice, PhysicalDeviceFe
 	features2.pNext = &vulkan11Features;
 
 	vulkan11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-	vulkan11Features.pNext = &dynamicRenderingFeaturesKHR;
+	vulkan11Features.pNext = &descriptorIndexingFeatures;
+
+	descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+	descriptorIndexingFeatures.pNext = &dynamicRenderingFeaturesKHR;
 
 	dynamicRenderingFeaturesKHR.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
 	dynamicRenderingFeaturesKHR.pNext = 0;
@@ -91,7 +95,7 @@ void Instance::create(const std::string& applicationName, const std::string& eng
 	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.pEngineName = engineName.c_str();
 	appInfo.engineVersion = VK_MAKE_VERSION(3, 0, 0);
-	appInfo.apiVersion = VK_API_VERSION_1_1;
+	appInfo.apiVersion = VK_API_VERSION_1_2;
 
 	VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -132,6 +136,8 @@ void Instance::create(const std::string& applicationName, const std::string& eng
 	selectPhysicalDevice(-1);
 	getPhysicalDeviceFeatures(physicalDevice, features);
 	features.features2.features.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
+	features.descriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
+	features.descriptorIndexingFeatures.runtimeDescriptorArray = VK_TRUE;
 
 	//Handle Queues
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &availableFamiliesCount, nullptr);
@@ -209,6 +215,9 @@ uint32_t scorePhysicalDevice(VkPhysicalDevice physicalDevice) {
 		properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
 		features.features2.features.geometryShader &&
 		features.features2.features.samplerAnisotropy &&
+		features.vulkan11Features.shaderDrawParameters &&
+		features.descriptorIndexingFeatures.descriptorBindingPartiallyBound &&
+		features.descriptorIndexingFeatures.runtimeDescriptorArray &&
 		features.dynamicRenderingFeaturesKHR.dynamicRendering;
 
 	return score;

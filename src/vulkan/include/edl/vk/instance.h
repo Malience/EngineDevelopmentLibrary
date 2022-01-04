@@ -19,6 +19,7 @@ const uint32_t MAX_QUEUES = 32;
 struct PhysicalDeviceFeatures {
     VkPhysicalDeviceFeatures2 features2;
     VkPhysicalDeviceVulkan11Features vulkan11Features;
+    VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures;
     VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeaturesKHR;
 };
 

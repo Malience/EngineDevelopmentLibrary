@@ -15,5 +15,9 @@ VkDescriptorPool createDescriptorPool(VkDevice device, uint32_t maxSets, uint32_
 VkDescriptorSetLayout createDescriptorSetLayout(VkDevice device, uint32_t bindingCount, const VkDescriptorSetLayoutBinding* bindings);
 void allocateDescriptorSets(VkDevice device, VkDescriptorPool descriptorPool, uint32_t descriptorSetCount, const VkDescriptorSetLayout* setLayouts, VkDescriptorSet* descriptorSets);
 
+VkDescriptorSetLayout createBindlessImageDescriptorSetLayout(VkDevice device, uint32_t descriptorCount, uint32_t binding);
+VkDescriptorSet allocateBindlessDescriptorSet(VkDevice device, VkDescriptorPool descriptorPool, VkDescriptorSetLayout descriptorSetLayout, uint32_t descriptorCount);
+
+
 } // namespace vk
 } // namespace edl

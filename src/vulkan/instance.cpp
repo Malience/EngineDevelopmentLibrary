@@ -18,8 +18,19 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 	void* pUserData) {
 
-	edl:log::trace("VulkanAPI", "validation layer: %s", pCallbackData->pMessage);
-
+	if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+	log::info("VulkanAPI", "validation layer: %s", pCallbackData->pMessage);
+	}
+	else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+	log::debug("VulkanAPI", "validation layer: %s", pCallbackData->pMessage);
+	}
+	else if (messageSeverity == VkDebugUtilsMessageSeverityFlagBitsEXT::VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+	log::error("VulkanAPI", "validation layer: %s", pCallbackData->pMessage);
+	}
+	else {
+	log::trace("VulkanAPI", "validation layer: %s", pCallbackData->pMessage);
+	}
+	
 	return VK_FALSE;
 }
 
@@ -127,7 +138,7 @@ void Instance::create(const std::string& applicationName, const std::string& eng
 	VkResult result = CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger);
 	checkResult(result, "Vulkan debug messenger creation");
 
-	//Enumerate the physical devices
+	// Enumerate the physical devices
 	vkEnumeratePhysicalDevices(instance, &availableDeviceCount, NULL);
 	assert(availableDeviceCount <= MAX_PHYSICAL_DEVICES);
 	vkEnumeratePhysicalDevices(instance, &availableDeviceCount, availableDevices);
@@ -138,11 +149,15 @@ void Instance::create(const std::string& applicationName, const std::string& eng
 	features.features2.features.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
 	features.descriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
 	features.descriptorIndexingFeatures.runtimeDescriptorArray = VK_TRUE;
+	features.dynamicRenderingFeaturesKHR.dynamicRendering = VK_TRUE;
 
-	//Handle Queues
+	// Handle Queues
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &availableFamiliesCount, nullptr);
 	assert(availableFamiliesCount <= MAX_QUEUE_FAMLIES);
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &availableFamiliesCount, availableFamilies);
+
+	//TODO: Look into this
+	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 
 	VkDeviceQueueCreateInfo deviceQueueCreateInfos[MAX_QUEUE_FAMLIES];
 
@@ -161,7 +176,7 @@ void Instance::create(const std::string& applicationName, const std::string& eng
 	}
 
 
-	//Logical Device Creation
+	// Logical Device Creation
 	VkDeviceCreateInfo deviceCreateInfo;
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	deviceCreateInfo.flags = 0;
@@ -180,7 +195,7 @@ void Instance::create(const std::string& applicationName, const std::string& eng
 
 	checkResult(vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device), "Device creation");
 
-	//Get queues
+	// Get queues
 	queuesCount = 0;
 	for (uint32_t i = 0; i < availableFamiliesCount; i++) {
 		VkQueueFamilyProperties family = availableFamilies[i];

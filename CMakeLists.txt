@@ -11,7 +11,7 @@ project(EDL
 )
 
 find_package(stb REQUIRED FATAL_ERROR)
-find_package(cglm REQUIRED FATAL_ERROR)
+find_package(glm REQUIRED FATAL_ERROR)
 find_package(spdlog REQUIRED FATAL_ERROR)
 find_package(assimp REQUIRED FATAL_ERROR)
 find_package(glfw3 REQUIRED FATAL_ERROR)

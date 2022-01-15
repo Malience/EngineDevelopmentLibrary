@@ -45,7 +45,7 @@ target_link_libraries(vulkan PRIVATE EDL::debug)
 ## External Dependencies
 target_compile_definitions(vulkan PRIVATE vulkan_USE_PLATFORM_WIN32_KHR)
 target_link_libraries(vulkan PUBLIC Vulkan::Vulkan)
-target_link_libraries(vulkan PRIVATE cglm::cglm)
+target_link_libraries(vulkan PRIVATE glm::glm)
 #target_link_libraries(vulkan PRIVATE vma)
 
 ## Install

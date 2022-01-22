@@ -34,7 +34,6 @@ add_library(EDL::graphics_lib ALIAS graphics_lib)
 target_link_libraries(graphics_lib PRIVATE EDL::debug)
 target_link_libraries(graphics_lib PRIVATE EDL::vulkan)
 ## External Dependencies
-target_link_libraries(graphics_lib PRIVATE assimp::assimp)
 target_link_libraries(graphics_lib PRIVATE glm::glm)
 target_link_libraries(graphics_lib PRIVATE glfw)
 target_link_libraries(graphics_lib PRIVATE shaderc)

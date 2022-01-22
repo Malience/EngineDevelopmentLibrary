@@ -21,7 +21,6 @@ add_library(EDL::debug ALIAS debug)
 
 ## Internal Dependencies
 ## External Dependencies
-target_link_libraries(debug PRIVATE spdlog::spdlog)
 
 ## Install
 include(GNUInstallDirs)

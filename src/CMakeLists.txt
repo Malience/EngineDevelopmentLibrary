@@ -1,8 +1,7 @@
 ## LIBRARY
 add_subdirectory(debug)
-
-#add_subdirectory(ecs)
+add_subdirectory(util)
 add_subdirectory(vulkan)
-add_subdirectory(graphics_lib)
 
 ## FRAMEWORK
+add_subdirectory(graphics)

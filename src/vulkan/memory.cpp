@@ -7,9 +7,16 @@ namespace vk {
 
 //TODO: add descriptors and push constants
 VkDeviceMemory allocateMemory(VkDevice device, VkDeviceSize size, uint32_t memoryType) {
+	// TEMP: Kinda a hack
+	VkMemoryAllocateFlagsInfo flagsInfo = {};
+	flagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+	flagsInfo.pNext = nullptr;
+	flagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT;
+	flagsInfo.deviceMask = 0x0;
+
 	VkMemoryAllocateInfo allocateInfo;
 	allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocateInfo.pNext = NULL;
+	allocateInfo.pNext = &flagsInfo;
 	allocateInfo.allocationSize = size;
 	allocateInfo.memoryTypeIndex = memoryType;
 

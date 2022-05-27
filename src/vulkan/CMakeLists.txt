@@ -1,6 +1,6 @@
 ## Vulkan Objects Lib
 
-add_library(vulkan STATIC
+add_library(Vulkan STATIC
 ## Public Header Files
 	${CMAKE_CURRENT_SOURCE_DIR}/include/edl/vk/command.h
 	${CMAKE_CURRENT_SOURCE_DIR}/include/edl/vk/debug.h
@@ -30,28 +30,28 @@ add_library(vulkan STATIC
 	${CMAKE_CURRENT_SOURCE_DIR}/surface.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/swapchain.cpp
 )
-set_target_properties(vulkan PROPERTIES FOLDER "EngineLib")
+set_target_properties(Vulkan PROPERTIES FOLDER "EngineLib")
 
-target_include_directories(vulkan PUBLIC 
+target_include_directories(Vulkan PUBLIC 
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
 	$<INSTALL_INTERFACE:include>
 )
 
-add_library(EDL::vulkan ALIAS vulkan)
+add_library(EDL::Vulkan ALIAS Vulkan)
 
 ## Internal Dependencies
-target_link_libraries(vulkan PRIVATE EDL::debug)
+target_link_libraries(Vulkan PUBLIC EDL::Debug)
 ## External Dependencies
-target_compile_definitions(vulkan PRIVATE vulkan_USE_PLATFORM_WIN32_KHR)
-target_link_libraries(vulkan PUBLIC Vulkan::Vulkan)
-target_link_libraries(vulkan PRIVATE glm::glm)
+target_compile_definitions(Vulkan PRIVATE vulkan_USE_PLATFORM_WIN32_KHR)
+target_link_libraries(Vulkan PUBLIC Vulkan::Vulkan)
+target_link_libraries(Vulkan PRIVATE glm::glm)
 #target_link_libraries(vulkan PRIVATE vma)
 
 ## Install
 include(GNUInstallDirs)
 
-install(TARGETS vulkan 
+install(TARGETS Vulkan 
     EXPORT edl-vulkan-targets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

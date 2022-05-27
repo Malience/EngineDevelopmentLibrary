@@ -11,7 +11,7 @@ namespace edl {
 namespace vk {
 
 //Prints the result of a vulkan API call
-void checkResult(VkResult result, const char* action);
+void checkResult(VkResult result, const std::string& action);
 
 } // namespace vk
 } // namespace edl

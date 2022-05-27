@@ -239,14 +239,19 @@ VkPipeline PipelineBuilder::create(VkPipelineLayout layout) {
 
 //TODO: add descriptors and push constants
 VkPipelineLayout createPipelineLayout(VkDevice device, uint32_t setLayoutCount, const VkDescriptorSetLayout* pSetLayouts) {
+	VkPushConstantRange range = {};
+	range.stageFlags = VK_SHADER_STAGE_ALL;
+	range.offset = 0;
+	range.size = 128;
+
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo;
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutInfo.pNext = NULL;
 	pipelineLayoutInfo.flags = 0;
 	pipelineLayoutInfo.setLayoutCount = setLayoutCount;
 	pipelineLayoutInfo.pSetLayouts = pSetLayouts;
-	pipelineLayoutInfo.pushConstantRangeCount = 0;
-	pipelineLayoutInfo.pPushConstantRanges = NULL;
+	pipelineLayoutInfo.pushConstantRangeCount = 1;
+	pipelineLayoutInfo.pPushConstantRanges = &range;
 
 	VkPipelineLayout pipelineLayout = 0;
 	checkResult(vkCreatePipelineLayout(device, &pipelineLayoutInfo, NULL, &pipelineLayout), "Pipeline layout creation");

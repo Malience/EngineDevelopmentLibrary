@@ -55,6 +55,19 @@ VkResult DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessenge
 	}
 }
 
+VkBool32 VkReportCallback(
+	VkDebugReportFlagsEXT                       flags,
+	VkDebugReportObjectTypeEXT                  objectType,
+	uint64_t                                    object,
+	size_t                                      location,
+	int32_t                                     messageCode,
+	const char* pLayerPrefix,
+	const char* pMessage,
+	void* pUserData) {
+	log::debug("VulkanAPI", pMessage);
+	return VK_TRUE;
+}
+
 void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
 	createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -77,21 +90,26 @@ uint32_t Instance::getMemoryType(int filter, VkMemoryPropertyFlags properties) c
 void getPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice, PhysicalDeviceFeatures& features) {
 	VkPhysicalDeviceFeatures2& features2 = features.features2;
 	VkPhysicalDeviceVulkan11Features& vulkan11Features = features.vulkan11Features;
-	VkPhysicalDeviceDescriptorIndexingFeatures& descriptorIndexingFeatures = features.descriptorIndexingFeatures;
-	VkPhysicalDeviceDynamicRenderingFeaturesKHR& dynamicRenderingFeaturesKHR = features.dynamicRenderingFeaturesKHR;
+	VkPhysicalDeviceVulkan12Features& vulkan12Features = features.vulkan12Features;
+	VkPhysicalDeviceVulkan13Features& vulkan13Features = features.vulkan13Features;
+	VkPhysicalDeviceMeshShaderFeaturesNV& meshShaderFeaturesNV = features.meshShaderFeaturesNV;
+	VkPhysicalDeviceMeshShaderPropertiesNV& meshShaderPropertiesNV = features.meshShaderPropertiesNV;
 
 	// Initialize the features
 	features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 	features2.pNext = &vulkan11Features;
 
 	vulkan11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-	vulkan11Features.pNext = &descriptorIndexingFeatures;
+	vulkan11Features.pNext = &vulkan12Features;
 
-	descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
-	descriptorIndexingFeatures.pNext = &dynamicRenderingFeaturesKHR;
+	vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+	vulkan12Features.pNext = &vulkan13Features;
 
-	dynamicRenderingFeaturesKHR.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
-	dynamicRenderingFeaturesKHR.pNext = 0;
+	vulkan13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+	vulkan13Features.pNext = &meshShaderFeaturesNV;
+
+	meshShaderFeaturesNV.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV;
+	meshShaderFeaturesNV.pNext = 0;
 
 	// Get features from device
 	vkGetPhysicalDeviceFeatures2(physicalDevice, &features2);
@@ -106,19 +124,38 @@ void Instance::create(const std::string& applicationName, const std::string& eng
 	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.pEngineName = engineName.c_str();
 	appInfo.engineVersion = VK_MAKE_VERSION(3, 0, 0);
-	appInfo.apiVersion = VK_API_VERSION_1_2;
+	appInfo.apiVersion = VK_API_VERSION_1_3;
+
+	VkDebugReportCallbackCreateInfoEXT reportCallbackInfo = {};
+	reportCallbackInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+	reportCallbackInfo.pNext = nullptr;
+	reportCallbackInfo.flags = VK_DEBUG_REPORT_INFORMATION_BIT_EXT | VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+	reportCallbackInfo.pfnCallback = VkReportCallback;
+	reportCallbackInfo.pUserData = nullptr;
 
 	VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+	createInfo.pNext = nullptr;// &reportCallbackInfo;
+	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT;
 	createInfo.pfnUserCallback = debugCallback;
 	createInfo.pUserData = nullptr; // Optional
+
+	std::vector<VkValidationFeatureEnableEXT> enabledFeatures = { VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT };
+	std::vector<VkValidationFeatureDisableEXT> disabledFeatures = {};// { VK_VALIDATION_FEATURE_DISABLE_GPU_ASSISTED_EXT };
+
+	VkValidationFeaturesEXT valfeatures = {};
+	valfeatures.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+	valfeatures.pNext = nullptr;// &createInfo;
+	valfeatures.enabledValidationFeatureCount = enabledFeatures.size();
+	valfeatures.pEnabledValidationFeatures = enabledFeatures.data();
+	valfeatures.disabledValidationFeatureCount = disabledFeatures.size();
+	valfeatures.pDisabledValidationFeatures = disabledFeatures.data();
 
 	VkInstanceCreateInfo instanceCreateInfo = {};
 	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	instanceCreateInfo.flags = 0;
-	instanceCreateInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&createInfo;
+	instanceCreateInfo.pNext = &createInfo;
 	instanceCreateInfo.pApplicationInfo = &appInfo;
 	instanceCreateInfo.enabledLayerCount = requestedLayers.size();
 	instanceCreateInfo.ppEnabledLayerNames = requestedLayers.data();
@@ -147,47 +184,58 @@ void Instance::create(const std::string& applicationName, const std::string& eng
 	selectPhysicalDevice(-1);
 	getPhysicalDeviceFeatures(physicalDevice, features);
 	features.features2.features.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
-	features.descriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
-	features.descriptorIndexingFeatures.runtimeDescriptorArray = VK_TRUE;
-	features.dynamicRenderingFeaturesKHR.dynamicRendering = VK_TRUE;
+	features.vulkan12Features.bufferDeviceAddress = VK_TRUE;
+	features.vulkan12Features.descriptorBindingPartiallyBound = VK_TRUE;
+	features.vulkan12Features.runtimeDescriptorArray = VK_TRUE;
+
+	VkPhysicalDeviceMeshShaderPropertiesNV meshShaderProperties = {};
+	meshShaderProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_PROPERTIES_NV;
+
+	VkPhysicalDeviceProperties2 properties = {};
+	properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+	properties.pNext = &meshShaderProperties;
+
+	vkGetPhysicalDeviceProperties2(physicalDevice, &properties);
 
 	// Handle Queues
-	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &availableFamiliesCount, nullptr);
-	assert(availableFamiliesCount <= MAX_QUEUE_FAMLIES);
-	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &availableFamiliesCount, availableFamilies);
+	uint32_t queueFamilyCount = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+	//assert(availableFamiliesCount <= MAX_QUEUE_FAMLIES);
+	queueFamilyProperties.resize(queueFamilyCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
 
 	//TODO: Look into this
 	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
 
-	VkDeviceQueueCreateInfo deviceQueueCreateInfos[MAX_QUEUE_FAMLIES];
+	//VkDeviceQueueCreateInfo deviceQueueCreateInfos[MAX_QUEUE_FAMLIES];
+	std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos;
+	std::vector<float> priorities = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
+	deviceQueueCreateInfos.resize(queueFamilyCount);
 
-	float priorities[] = { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
-
-	for (uint32_t i = 0; i < availableFamiliesCount; i++) {
+	for (uint32_t i = 0; i < queueFamilyCount; i++) {
 		VkDeviceQueueCreateInfo& info = deviceQueueCreateInfos[i];
-		VkQueueFamilyProperties family = availableFamilies[i];
+		VkQueueFamilyProperties& family = queueFamilyProperties[i];
 
 		info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		info.flags = 0;
 		info.pNext = nullptr;
 		info.queueFamilyIndex = i;
 		info.queueCount = family.queueCount;
-		info.pQueuePriorities = priorities;
+		info.pQueuePriorities = priorities.data();
 	}
-
 
 	// Logical Device Creation
 	VkDeviceCreateInfo deviceCreateInfo;
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	deviceCreateInfo.flags = 0;
 	deviceCreateInfo.pNext = &features.features2;
-	deviceCreateInfo.queueCreateInfoCount = availableFamiliesCount;
-	deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos;
-	deviceCreateInfo.pEnabledFeatures = NULL; //These are sent to pNext instead
+	deviceCreateInfo.queueCreateInfoCount = queueFamilyCount;
+	deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
+	deviceCreateInfo.pEnabledFeatures = nullptr; //These are sent to pNext instead
 
-	const char* const extensions[] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME };
-	deviceCreateInfo.ppEnabledExtensionNames = extensions;
-	deviceCreateInfo.enabledExtensionCount = 2;
+	std::vector<const char*> extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DEPTH_RANGE_UNRESTRICTED_EXTENSION_NAME, VK_NV_MESH_SHADER_EXTENSION_NAME };
+	deviceCreateInfo.ppEnabledExtensionNames = extensions.data();
+	deviceCreateInfo.enabledExtensionCount = extensions.size();
 
 	//TODO: Fix validation
 	deviceCreateInfo.enabledLayerCount = requestedLayers.size();
@@ -196,11 +244,12 @@ void Instance::create(const std::string& applicationName, const std::string& eng
 	checkResult(vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device), "Device creation");
 
 	// Get queues
-	queuesCount = 0;
-	for (uint32_t i = 0; i < availableFamiliesCount; i++) {
-		VkQueueFamilyProperties family = availableFamilies[i];
+	for (uint32_t i = 0; i < queueFamilyCount; i++) {
+		VkQueueFamilyProperties& family = queueFamilyProperties[i];
 		for (uint32_t j = 0; j < family.queueCount; j++) {
-			vkGetDeviceQueue(device, i, j, &queues[queuesCount]);
+			VkQueue queue = {};
+			vkGetDeviceQueue(device, i, j, &queue);
+			queues[queuesCount] = queue;
 			queuesCount++;
 			assert(queuesCount <= MAX_QUEUES);
 		}
@@ -208,10 +257,6 @@ void Instance::create(const std::string& applicationName, const std::string& eng
 
 	//TODO: Log this properly
 	edl::log::trace("VulkanAPI", "Queue's Gathered!");
-
-	// Load functions
-	vkCmdBeginRenderingKHR = reinterpret_cast<PFN_vkCmdBeginRenderingKHR>(vkGetDeviceProcAddr(device, "vkCmdBeginRenderingKHR"));
-	vkCmdEndRenderingKHR = reinterpret_cast<PFN_vkCmdEndRenderingKHR>(vkGetDeviceProcAddr(device, "vkCmdEndRenderingKHR"));
 }
 
 uint32_t scorePhysicalDevice(VkPhysicalDevice physicalDevice) {
@@ -231,9 +276,9 @@ uint32_t scorePhysicalDevice(VkPhysicalDevice physicalDevice) {
 		features.features2.features.geometryShader &&
 		features.features2.features.samplerAnisotropy &&
 		features.vulkan11Features.shaderDrawParameters &&
-		features.descriptorIndexingFeatures.descriptorBindingPartiallyBound &&
-		features.descriptorIndexingFeatures.runtimeDescriptorArray &&
-		features.dynamicRenderingFeaturesKHR.dynamicRendering;
+		features.vulkan12Features.descriptorBindingPartiallyBound &&
+		features.vulkan12Features.runtimeDescriptorArray &&
+		features.vulkan13Features.dynamicRendering;
 
 	return score;
 }

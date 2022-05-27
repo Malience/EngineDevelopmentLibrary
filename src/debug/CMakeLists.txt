@@ -1,23 +1,23 @@
 ## Debug Lib
 
-add_library(debug STATIC
+add_library(Debug STATIC
 ## Public Header Files
-	${CMAKE_CURRENT_SOURCE_DIR}/include/edl/debug.h
-	${CMAKE_CURRENT_SOURCE_DIR}/include/edl/logger.h
+	${CMAKE_CURRENT_SOURCE_DIR}/include/edl/Debug.h
+	${CMAKE_CURRENT_SOURCE_DIR}/include/edl/Logger.h
 ## Private Header Files
 ## Source Files
-	${CMAKE_CURRENT_SOURCE_DIR}/logger.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp
 )
-set_target_properties(debug PROPERTIES FOLDER "EngineLib")
-set_target_properties(debug PROPERTIES LANGUAGE CXX LINKER_LANGUAGE CXX)
+set_target_properties(Debug PROPERTIES FOLDER "EngineLib")
+set_target_properties(Debug PROPERTIES LANGUAGE CXX LINKER_LANGUAGE CXX)
 
-target_include_directories(debug PUBLIC 
+target_include_directories(Debug PUBLIC 
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
 	$<INSTALL_INTERFACE:include>
 )
 
-add_library(EDL::debug ALIAS debug)
+add_library(EDL::Debug ALIAS Debug)
 
 ## Internal Dependencies
 ## External Dependencies
@@ -25,7 +25,7 @@ add_library(EDL::debug ALIAS debug)
 ## Install
 include(GNUInstallDirs)
 
-install(TARGETS debug 
+install(TARGETS Debug 
     EXPORT edl-debug-targets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

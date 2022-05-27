@@ -5,15 +5,11 @@ set(CMAKE_DEBUG_POSTFIX "d")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(EDL 
-	LANGUAGES C CXX
-	VERSION 0.1.0
-)
+project(EDL LANGUAGES C CXX VERSION 0.1.0)
 
-find_package(stb REQUIRED FATAL_ERROR)
-find_package(glm REQUIRED FATAL_ERROR)
-find_package(glfw3 REQUIRED FATAL_ERROR)
+if(NOT TARGET Vulkan::Vulkan)
 find_package(Vulkan REQUIRED FATAL_ERROR)
+endif()
 
 if (NOT TARGET shaderc)
 ## ShaderC
@@ -32,6 +28,9 @@ set_target_properties(shaderc PROPERTIES IMPORTED_LOCATION_RELWITHDEBINFO "$ENV{
 set_target_properties(shaderc PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${shaderc_INCLUDE_DIR}")
 
 endif()
+
+## Add Externals
+add_subdirectory(ext)
 
 ## Build libraries
 add_subdirectory(src)

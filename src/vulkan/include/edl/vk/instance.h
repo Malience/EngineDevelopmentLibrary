@@ -19,8 +19,10 @@ const uint32_t MAX_QUEUES = 32;
 struct PhysicalDeviceFeatures {
     VkPhysicalDeviceFeatures2 features2;
     VkPhysicalDeviceVulkan11Features vulkan11Features;
-    VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures;
-    VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeaturesKHR;
+    VkPhysicalDeviceVulkan12Features vulkan12Features;
+    VkPhysicalDeviceVulkan13Features vulkan13Features;
+    VkPhysicalDeviceMeshShaderFeaturesNV meshShaderFeaturesNV;
+    VkPhysicalDeviceMeshShaderPropertiesNV meshShaderPropertiesNV;
 };
 
 //TODO: Destruction
@@ -36,8 +38,9 @@ struct Instance {
     uint32_t availableDeviceCount;
     VkPhysicalDevice availableDevices[MAX_PHYSICAL_DEVICES];
 
-    uint32_t availableFamiliesCount;
-    VkQueueFamilyProperties availableFamilies[MAX_QUEUE_FAMLIES];
+    //uint32_t availableFamiliesCount;
+    //VkQueueFamilyProperties availableFamilies[MAX_QUEUE_FAMLIES];
+    std::vector<VkQueueFamilyProperties> queueFamilyProperties;
 
     uint32_t queuesCount;
     VkQueue queues[MAX_QUEUES];

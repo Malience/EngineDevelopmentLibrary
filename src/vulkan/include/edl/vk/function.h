@@ -6,8 +6,8 @@ namespace edl {
 namespace vk {
 
 // Extra vulkan functions
-extern PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR;
-extern PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR;
+//extern PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR;
+//extern PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR;
 
 } // namespace vk
 } // namespace edl

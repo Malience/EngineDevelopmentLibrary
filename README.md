@@ -3,7 +3,7 @@ A lightweight and modular library for game engine development.
 
 ## Required Dependencies
 * <a href="https://vulkan.lunarg.com/" target="_blank">`Vulkan SDK`</a>
-Updated Graphics Drivers
+* Updated Graphics Drivers
 
 ## Included Dependencies
 

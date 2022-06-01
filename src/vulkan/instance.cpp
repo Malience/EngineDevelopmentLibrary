@@ -197,6 +197,10 @@ void Instance::create(const std::string& applicationName, const std::string& eng
 
 	vkGetPhysicalDeviceProperties2(physicalDevice, &properties);
 
+	MESH_SHADING = features.meshShaderFeaturesNV.meshShader;
+	//TEMPORARY
+	//MESH_SHADING = false;
+
 	// Handle Queues
 	uint32_t queueFamilyCount = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
@@ -233,7 +237,10 @@ void Instance::create(const std::string& applicationName, const std::string& eng
 	deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
 	deviceCreateInfo.pEnabledFeatures = nullptr; //These are sent to pNext instead
 
-	std::vector<const char*> extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DEPTH_RANGE_UNRESTRICTED_EXTENSION_NAME, VK_NV_MESH_SHADER_EXTENSION_NAME };
+	std::vector<const char*> extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DEPTH_RANGE_UNRESTRICTED_EXTENSION_NAME };
+	if (MESH_SHADING) {
+		extensions.push_back(VK_NV_MESH_SHADER_EXTENSION_NAME);
+	}
 	deviceCreateInfo.ppEnabledExtensionNames = extensions.data();
 	deviceCreateInfo.enabledExtensionCount = extensions.size();
 

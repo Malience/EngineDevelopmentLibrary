@@ -45,6 +45,8 @@ struct Instance {
     uint32_t queuesCount;
     VkQueue queues[MAX_QUEUES];
 
+    bool MESH_SHADING;
+
     void create(const std::string& applicationName, const std::string& engineName, const std::vector<const char*>& requestedLayers, const std::vector<const char*>& requestedExtension);
     void selectPhysicalDevice(int deviceIndex);
     uint32_t getMemoryType(int filter, VkMemoryPropertyFlags properties) const;
